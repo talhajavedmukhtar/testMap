@@ -1,10 +1,12 @@
 import 'dart:ffi';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:custom_info_window/custom_info_window.dart';
 
 import 'package:mapapp/controller/place_fetcher.dart';
+import 'package:mapapp/route/details_page.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import "package:mapapp/model/place.dart";
 import 'package:mapapp/secret/api_key.dart';
@@ -27,6 +29,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Flutter Map App'),
+      initialRoute: '/',
+      routes: {
+        DetailsRoute.routeName: (context) => const DetailsRoute(),
+      },
     );
   }
 }
@@ -193,6 +199,9 @@ class _MyHomePageState extends State<MyHomePage> {
       final LatLng point = LatLng(place.latitude, place.longitude);
       final name = place.name;
       final thumbnail = place.thumbNail;
+      final address = place.address;
+      final description = place.description;
+      final pictures = place.pictures;
 
       markers.add(Marker(
         markerId: MarkerId(point.toString()),
@@ -213,26 +222,46 @@ class _MyHomePageState extends State<MyHomePage> {
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Image.network(
-                                  'https://maps.googleapis.com/maps/api/place/photo?maxwidth=70&photo_reference=$thumbnail&key=$googleMapsAPIKey'),
+                              Container(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Image.network(
+                                      'https://maps.googleapis.com/maps/api/place/photo?maxwidth=70&photo_reference=$thumbnail&key=$googleMapsAPIKey')),
                             ]),
-                        Text('Name: $name', style: TextStyle(fontSize: 17.0)),
-                        Text('Address: address goes here'),
-                        const Text('Description: description goes here'),
+                        Text(name,
+                            style: TextStyle(
+                                fontSize: 17.0, fontWeight: FontWeight.bold)),
+                        Text('Address: $address',
+                            style: TextStyle(
+                              fontSize: 10.0,
+                            )),
+                        Text('Description: $description'),
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(3.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(2),
-                                  border: Border.all(),
-                                ),
-                                child: const Text('View Details',
-                                    style: TextStyle(
-                                        fontSize: 12.0, color: Colors.white)),
-                              )
+                              TextButton(
+                                  style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      alignment: Alignment.centerLeft),
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                        context, DetailsRoute.routeName,
+                                        arguments: DetailsArguments(
+                                            name, description, pictures));
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(5.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: BorderRadius.circular(2),
+                                      border: Border.all(),
+                                    ),
+                                    child: const Text('View Details',
+                                        style: TextStyle(
+                                            fontSize: 12.0,
+                                            color: Colors.white)),
+                                  )),
                             ])
                       ],
                     )),
